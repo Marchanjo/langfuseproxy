@@ -1,8 +1,8 @@
 # Langfuse PII Proxy
 
 Proxy HTTP que intercepta os spans OpenTelemetry enviados pelo IBM Orchestrate
-ao Langfuse Cloud, mascarando PII (CPF, CNPJ, RG, e-mail, telefone, nomes)
-antes do envio.
+ao Langfuse Cloud, mascarando PII (CPF, CNPJ, RG, e-mail, telefone, nomes,
+cartões de crédito e valores financeiros) antes do envio.
 
 ```
 IBM Orchestrate → este proxy (Render) → Langfuse Cloud
@@ -10,14 +10,43 @@ IBM Orchestrate → este proxy (Render) → Langfuse Cloud
 
 ## Dados mascarados
 
-| Tipo       | Exemplo original      | Após masking  |
-|------------|-----------------------|---------------|
-| CPF        | 123.456.789-09        | [CPF]         |
-| CNPJ       | 12.345.678/0001-90    | [CNPJ]        |
-| E-mail     | joao@empresa.com.br   | [EMAIL]       |
-| Telefone   | (11) 99999-9999       | [TEL]         |
-| RG         | 12.345.678-9          | [RG]          |
-| Nome       | João da Silva         | [NOME]        |
+### Documentos e contatos
+
+| Tipo     | Exemplo original    | Após masking |
+|----------|---------------------|--------------|
+| CPF      | 123.456.789-09      | [CPF]        |
+| CNPJ     | 12.345.678/0001-90  | [CNPJ]       |
+| RG       | 12.345.678-9        | [RG]         |
+| E-mail   | joao@empresa.com.br | [EMAIL]      |
+| Telefone | (11) 99999-9999     | [TEL]        |
+| Nome     | João da Silva       | [NOME]       |
+
+### Cartões de crédito/débito
+
+| Bandeira                        | Exemplo original    | Após masking |
+|---------------------------------|---------------------|--------------|
+| Visa/Master/Elo — com espaço    | 4111 1111 1111 1111 | [CARTAO]     |
+| Visa/Master/Elo — com hífen     | 4111-1111-1111-1111 | [CARTAO]     |
+| Visa/Master/Elo — sem separador | 4111111111111111    | [CARTAO]     |
+| Amex (15 dígitos)               | 3714 496353 98431   | [CARTAO]     |
+| Diners (14 dígitos)             | 3056 930009 0259    | [CARTAO]     |
+
+### Valores financeiros
+
+| Formato                       | Exemplo original  | Após masking    |
+|-------------------------------|-------------------|-----------------|
+| R$ com separador de milhar    | R$ 1.234,56       | [VALOR]         |
+| R$ sem separador de milhar    | R$750,00          | [VALOR]         |
+| R$ negativo                   | R$ -200,50        | [VALOR]         |
+| Após palavra-chave financeira | Saldo: 3.200,00   | Saldo: [VALOR]  |
+| Após palavra-chave financeira | Valor: 150,00     | Valor: [VALOR]  |
+
+Palavras-chave reconhecidas: `saldo`, `valor`, `limite`, `débito`, `crédito`,
+`pagamento`, `transferência`, `tarifa`, `taxa`, `parcela`, `desconto`, `total`,
+`subtotal`, `cobrança`, `fatura`.
+
+> **Não mascarados** (intencionalmente): anos (`2024`), datas (`12/2027`) e
+> números sem contexto financeiro explícito.
 
 ## Deploy no Render
 
