@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: langfuse-pii-proxy
+    runtime: python
+    plan: free                        # troque por "starter" se precisar de sempre-ativo
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: LANGFUSE_UPSTREAM_URL
+        value: https://us.cloud.langfuse.com   # ajuste se usar EU: https://cloud.langfuse.com
