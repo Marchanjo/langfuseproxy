@@ -184,8 +184,25 @@ def mask_protobuf(body: bytes) -> bytes:
 # ---------------------------------------------------------------------------
 
 @app.get("/health")
-async def health():
+async def health_simple():
+    """Health check interno (ex: Render uptime monitoring)."""
     return {"status": "ok"}
+
+
+@app.get("/api/public/health")
+async def health_langfuse():
+    """
+    Replica o formato exato do Langfuse health check.
+    O IBM Orchestrate chama este endpoint ao configurar a integração e
+    espera a resposta no formato {'status': 'OK'} com HTTP 200.
+    """
+    return {"status": "OK"}
+
+
+@app.get("/api/public/ready")
+async def ready_langfuse():
+    """Replica o endpoint de readiness do Langfuse."""
+    return {"status": "OK"}
 
 
 @app.api_route(
