@@ -24,6 +24,25 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Langfuse PII Proxy")
 
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Loga todas as requisições recebidas para facilitar debugging."""
+    logger.info(
+        "REQUEST  method=%s path=%s content-type=%s",
+        request.method,
+        request.url.path,
+        request.headers.get("content-type", "-"),
+    )
+    response = await call_next(request)
+    logger.info(
+        "RESPONSE method=%s path=%s status=%s",
+        request.method,
+        request.url.path,
+        response.status_code,
+    )
+    return response
+
 # URL do Langfuse upstream — pode ser sobrescrita por variável de ambiente
 LANGFUSE_UPSTREAM = os.getenv(
     "LANGFUSE_UPSTREAM_URL", "https://us.cloud.langfuse.com"
@@ -202,6 +221,15 @@ async def health_langfuse():
 @app.get("/api/public/ready")
 async def ready_langfuse():
     """Replica o endpoint de readiness do Langfuse."""
+    return {"status": "OK"}
+
+
+@app.get("/")
+async def root():
+    """
+    Raiz do proxy — retorna status compatível com Langfuse.
+    O Orchestrate pode chamar host_health_uri/ durante a validação.
+    """
     return {"status": "OK"}
 
 
