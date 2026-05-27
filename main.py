@@ -110,17 +110,23 @@ _PATTERNS = [
     # ------------------------------------------------------------------
     # Documentos e contatos
     # ------------------------------------------------------------------
+    # Números 0800 / 0300 / 0500 / 0900 (sem DDD) — antes do CPF para evitar colisão
+    (
+        re.compile(r"\b0[89305]00[\s-]?\d{3}[\s-]?\d{4}\b"),
+        "[TEL]",
+    ),
     # CPF  (123.456.789-09 / 12345678909)
     (re.compile(r"\b\d{3}[.\s]?\d{3}[.\s]?\d{3}[-\s]?\d{2}\b"), "[CPF]"),
     # CNPJ (12.345.678/0001-90)
     (re.compile(r"\b\d{2}[.\s]?\d{3}[.\s]?\d{3}[/\s]?\d{4}[-\s]?\d{2}\b"), "[CNPJ]"),
     # E-mail — captura domínio completo incluindo TLD composto (.com.br)
     (re.compile(r"\b[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}\b"), "[EMAIL]"),
-    # Telefone BR  (+55 11 99999-9999 / (11) 9999-9999)
+    # Telefone BR com DDD (+55 11 99999-9999 / (11) 9999-9999)
     (
         re.compile(r"(\+55[\s-]?)?(\(?\d{2}\)?[\s-]?)\d{4,5}[\s-]?\d{4}\b"),
         "[TEL]",
     ),
+
     # RG  (12.345.678-9)
     (re.compile(r"\b\d{2}\.?\d{3}\.?\d{3}[-]?\d{1,2}\b"), "[RG]"),
     # Nomes próprios: 2+ palavras capitalizadas, opcionalmente separadas por preposição
